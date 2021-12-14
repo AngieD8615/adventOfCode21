@@ -16,30 +16,44 @@ probably figure out where it's going.
 
 **/
 
-import { readFile } from 'fs'
+import { readFileSync } from 'fs'
 
 var parseFile = (filePath) => {
 
-    readFile(filePath, 'utf8', (err, data) => {
-        if (err) throw err
-        sumDirections(data)
+    var data = readFileSync(filePath, 'utf8')
+    data = data.split("\n").map(dir =>{
+        var vector = dir.split(" ")
+        vector[1] = parseInt(vector[1])
+        return vector
     })
+    return data;
 }
-parseFile("./Day2/input.txt")
 
-var sumDirections = directions => {
+var sumDirectionsA = directions => {
+    var directionVector = {
+        forward: 0,
+        depth: 0,
+    }
+
+    directions.forEach(vector => {
+        if (vector[0] == "forward") {
+            directionVector.forward += vector[1]
+        } else if (vector[0] == "up") {
+            directionVector.depth -= vector[1]
+        } else if (vector[0]  == "down") {
+            directionVector.depth += vector[1]
+        }
+    })
+
+    return directionVector;
+}
+
+var sumDirectionsB = directions => {
     var directionVector = {
         forward: 0,
         depth: 0,
         aim: 0
     }
-
-    directions = directions.split("\n").map(dir =>{
-        var vector = dir.split(" ")
-        vector[1] = parseInt(vector[1])
-        return vector
-    })
-
 
     directions.forEach(vector => {
         if (vector[0] == "forward") {
@@ -51,10 +65,28 @@ var sumDirections = directions => {
             directionVector.aim += vector[1]
         }
     })
-
-    displayResults(directionVector)
+    return directionVector;
 }
 
 var displayResults = (directionVector) => {
     console.log(`distance forward: ${directionVector.forward}\ndepth ${directionVector.depth}\nproduct of forward and depth ${directionVector.forward * directionVector.depth}`)
 }
+
+
+function sonarSweepA (filePath) {
+    var data = parseFile(filePath)
+    var directionVector = sumDirectionsA(data)
+    // displayResults(directionVector)
+    return directionVector.forward * directionVector.depth
+}
+
+function sonarSweepB (filePath) {
+    var data = parseFile(filePath)
+    var directionVector = sumDirectionsB(data)
+    // displayResults(directionVector)
+    return directionVector.forward * directionVector.depth
+}
+
+console.log(`part A: ${sonarSweepA("./Day2/input.txt")}`)
+
+console.log(`part B: ${sonarSweepB("./Day2/input.txt")}`)
