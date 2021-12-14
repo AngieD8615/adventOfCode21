@@ -73,20 +73,20 @@ var displayResults = (directionVector) => {
 }
 
 
-function sonarSweepA (filePath) {
+function diveA (filePath) {
     var data = parseFile(filePath)
     var directionVector = sumDirectionsA(data)
     // displayResults(directionVector)
     return directionVector.forward * directionVector.depth
 }
 
-function sonarSweepB (filePath) {
+function diveB (filePath) {
     var data = parseFile(filePath)
     var directionVector = sumDirectionsB(data)
     // displayResults(directionVector)
     return directionVector.forward * directionVector.depth
 }
 
-console.log(`part A: ${sonarSweepA("./Day2/input.txt")}`)
+console.log(`part A: ${diveA("./Day2/input.txt")}`)
 
-console.log(`part B: ${sonarSweepB("./Day2/input.txt")}`)
+console.log(`part B: ${diveB("./Day2/input.txt")}`)

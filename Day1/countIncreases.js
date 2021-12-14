@@ -11,19 +11,15 @@ To do this, count the number of times a depth measurement increases from the pre
 
 **/
 
-import { readFile } from 'fs'
+import { readFileSync } from 'fs'
 
 var parseFile = (filePath) => {
-
-    readFile(filePath, 'utf8', (err, data) => {
-        if (err) throw err
-        countIncreases(data)
-    })
+    var data = readFileSync(filePath, 'utf8');
+    data = data.split('\n').map(val => parseInt(val))
+    return data;
 }
-parseFile("./Day1/input.txt")
 
 var countIncreases = (depths, slidingWindow = 0,) => {
-    depths = depths.split('\n').map(val => parseInt(val))
     if (slidingWindow > 0) {
         for (var i = 0; i < depths.length - 2; i++) {
             depths[i] = depths[i] + depths[i + 1] + depths[i + 2]
@@ -37,6 +33,18 @@ var countIncreases = (depths, slidingWindow = 0,) => {
             numOfIncreases++
         }
     }
-    console.log(numOfIncreases);
     return numOfIncreases;
 }
+
+var sonarSweepA = (filePath) => {
+    var depths = parseFile(filePath)
+    return countIncreases(depths)
+}
+
+var sonarSweepB = (filePath) => {
+    var depths = parseFile(filePath)
+    return countIncreases(depths, 3)
+}
+
+console.log(sonarSweepA("./Day1/input.txt"))
+console.log(sonarSweepB("./Day1/input.txt"))
