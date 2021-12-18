@@ -33,6 +33,8 @@ Consider only horizontal and vertical lines. At how many points do at least two 
 
 import { readFileSync } from 'fs'
 
+var boardSize = 1000
+
 var pasreInput = (filePath) => {
   var data = readFileSync(filePath, 'utf8')
   data = data.split("\n").map(line => {
@@ -42,19 +44,90 @@ var pasreInput = (filePath) => {
     })
     return line
   })
-  
-  data = data.filter(endpoints => isStriaght(endpoints[0], endpoints[1]))
+
   return data
 }
 
-var isStriaght = (inital, final) => {
-  return (inital[0] === final[0] || inital[1] === final[1])
+var buildBoard = () => {
+  return Array(boardSize).fill(0).map(x => Array(boardSize).fill(0))
 }
 
+var isHorizontal = (coordinates) => {
+  return coordinates[0][1] === coordinates[1][1]
+}
+
+var isVertical = (coordinates) => {
+  return coordinates[0][0] === coordinates[1][0]
+}
+
+var increamentHorizotal = (board, coordinates) => {  // [[6, 4], [1,4]]
+  var y = coordinates[0][1]
+  var xInitial = (coordinates[0][0] < coordinates[1][0]) ? coordinates[0][0] : coordinates[1][0] 
+  var xFinal = (coordinates[0][0] < coordinates[1][0]) ? coordinates[1][0] : coordinates[0][0]
+  for (var x = xInitial; x <= xFinal; x++) {
+    board[y][x] += 1
+  }
+  return board
+}
+
+var increamentveritcal = (board, coordinates) => {  // [[6, 72], [6,4]]
+  var x = coordinates[0][0]
+  var yInitial = (coordinates[0][1] < coordinates[1][1]) ? coordinates[0][1] : coordinates[1][1] 
+  var yFinal = (coordinates[0][1] < coordinates[1][1]) ? coordinates[1][1] : coordinates[0][1]
+  for (var y = yInitial; y <= yFinal; y++) {
+    board[y][x]++
+  }
+  return board
+}
+
+var increamentDiagonol = (board, coordinates) => {
+  var xInitial = (coordinates[0][0] < coordinates[1][0]) ? coordinates[0][0] : coordinates[1][0] 
+  var yInitial = (coordinates[0][0] < coordinates[1][0]) ? coordinates[0][1] : coordinates[1][1]
+  var xFinal = (coordinates[0][0] < coordinates[1][0]) ? coordinates[1][0] : coordinates[0][0] 
+  var yFinal = (coordinates[0][0] < coordinates[1][0]) ? coordinates[1][1] : coordinates[0][1]
+
+  var y = yInitial
+  var yDelta = yFinal > yInitial ? 1 : -1
+
+  for (var x = xInitial; x <= xFinal; x++){
+    board[y][x]++
+    y += yDelta
+  }
+  return board
+}
+
+var fillInBoardWithLines = (filePath) => {
+  var lines = pasreInput(filePath)
+  var board = buildBoard()
+  lines.forEach(line => {
+    if (isHorizontal(line)) {
+      board = increamentHorizotal(board, line)
+    } else if (isVertical(line)) {
+      board = increamentveritcal(board, line)
+    } else {
+      board = increamentDiagonol(board, line)
+    }
+  })
+  return board
+}
+
+var countOverlap = (filePath) => {
+  var count = 0
+  var board = fillInBoardWithLines(filePath)
+  for (var row = 0; row < board.length; row++) {
+    for (var col = 0; col < board[row].length; col++) {
+      if (board[row][col] > 1) {
+        count++
+      }
+    }
+  }
+  return count
+}
 // test
 
 var runTest = () => {
   testParseInput()
+  testOriginalBoard()
 }
 
 var testParseInput = () => {
@@ -62,10 +135,13 @@ var testParseInput = () => {
   var expected = [
     [[223,805],[223,548]],
     [[609,164],[ 609,503]],
+    [[46,552],[796,52]],
     [[207,361],[ 207,34]],
     [[503,879],[ 503,946]],
     [[937,52],[937,268]],
     [[560,652],[ 118,652]],
+    [[771,103],[85,789]],
+    [[119,156],[947,984]],
     [[356,634],[ 607,634]]
   ]
 
@@ -86,4 +162,18 @@ var testParseInput = () => {
   }
 }
 
+var testOriginalBoard = () => {
+  var board = buildBoard()
+  if (board.length !== boardSize) {
+    console.log(`board should have 1000 rows but had ${board.length}`)
+  }
+  if (board[5].length !== boardSize) {
+    console.log(`board should have 1000 columns but had ${board[5].length}`)
+  }
+  if(board[2][6] !== 0) {
+    console.log(`board should be filled with 0s but has ${board[2][6]}`)
+  }
+}
+
 runTest()
+console.log(countOverlap("./input.txt"))
