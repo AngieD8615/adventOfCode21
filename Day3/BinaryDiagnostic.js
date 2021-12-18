@@ -16,46 +16,35 @@ in the corresponding position of all numbers in the diagnostic report.
  */
 
 
-import { readFile } from 'fs'
+import { readFileSync } from 'fs'
 
 var parseFile = (filePath) => {
-
-    readFile(filePath, 'utf8', (err, data) => {
-        if (err) throw err
-        data = data.split("\n")
-        findGammaAndEpsilonBinary(data)
-    })
+    var data = readFileSync(filePath, 'utf8')
+    data = data.split("\n")
+    return data
 }
-parseFile("./Day3/input.txt")
 
-var mostCommonBit = (index, data) => {
+var mostCommonBitAtIndex = (index, data) => {
   var moreOnes = 0;
-
   data.forEach(bin => {
     bin[index] === "1" ? moreOnes++ : moreOnes--
   })
 
   if (moreOnes > 0 ) {
     return "1"
-  }
-  return "0"
+  } else if (moreOnes < 0) {
+    return "0"
+  } 
+  return "tie"
 }
 
-var findGammaAndEpsilonBinary = (data) => {
-    var binLength = data[0].length;
-    var gammaBin = "";
-    for (let i = 0; i < binLength; i++) {
-      gammaBin += mostCommonBit(i, data)
-    }
-    var epsilonBin = invertBinary(gammaBin)
-    console.log(`gamma: ${gammaBin} \nepsilon: ${epsilonBin}`)
-
-    var gamma = parseInt(gammaBin, 2)
-    var epsilon = parseInt(epsilonBin, 2) 
-    console.log(`gamma: ${gamma} \nepsilon: ${epsilon}`)
-
-    console.log(`product: ${epsilon * gamma}`)
-
+var findBinaryMadeFromMostCommonBit = (data) => {
+  var binary = "";
+  var binLength = data[0].length;
+  for (let i = 0; i < binLength; i++) {
+    binary += mostCommonBitAtIndex(i, data)
+  }
+  return binary;
 }
 
 var invertBinary = (initialBinary) => {
@@ -69,3 +58,48 @@ var invertBinary = (initialBinary) => {
   })
   return invertedBinary
 }
+
+var binaryDiagnosticA = (filePath) => {
+  var binaries = parseFile(filePath)
+  var gamma = findBinaryMadeFromMostCommonBit(binaries)
+  var epsilon = invertBinary(gamma)
+  return parseInt(gamma, 2) * parseInt(epsilon, 2)
+}
+
+console.log(binaryDiagnosticA("./Day3/input.txt"))
+
+var binaryDiagnosticB = (filePath) => {
+  var binaries = parseFile(filePath)
+  var oxygen = findOxygen(binaries)
+  var co2 = findCO2(binaries)
+  console.log(`Oxygen: ${oxygen} co2: ${co2}`)
+  return parseInt(oxygen, 2) * parseInt(co2, 2) 
+}
+
+var findOxygen = binaries => {
+  var binaryLength = binaries[0].length
+  for (var i = 0; i < binaryLength; i++) {
+    var keepChar = mostCommonBitAtIndex(i, binaries)
+    if (keepChar === "tie") keepChar = "1"
+    var tempBinaries = binaries.filter(binary => binary[i] === keepChar)
+    
+    if (tempBinaries.length === 1) return tempBinaries
+    binaries = tempBinaries
+  }
+  return binaries;
+}
+
+var findCO2 = binaries => {
+  var binaryLength = binaries[0].length
+  for (var i = 0; i < binaryLength; i++) {
+    var removeChar = mostCommonBitAtIndex(i, binaries)
+    if (removeChar === "tie") removeChar = "1"
+    var tempBinaries = binaries.filter(binary => binary[i] !== removeChar)
+    
+    if (tempBinaries.length === 1) return tempBinaries
+    binaries = tempBinaries
+  }
+  return binaries;
+}
+
+console.log(binaryDiagnosticB("./Day3/input.txt"))
